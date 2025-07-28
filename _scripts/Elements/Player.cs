@@ -55,6 +55,11 @@ public class Player : MonoBehaviour
 
     void Update()   //  Her Framede Çalýþan Kýsým, Fps'e Baðlý Olduðu Ýçin Pc nin Kalitesine Göre Çalýþma Sýklýðý Deðiþiyor, Girdi Alma, Fizik Dýþý Ýþlemler Ýçin fln kullanýlýr
     {
+        if (Time.timeScale == 0) return;    //  Oyun Durduðunda Girdi Alýmlarýný Falan Kapatmak Ýçin Çünkü;
+            //  !!  Update Pcnin Ürettiði Her Karede Çalýþtýðý Ýçin Oyun Zamanýnýn Durmasýndan Etkilenmiyor, Ýçindeki Time.deltaTime Kýsýmlarý Hariç Herþey Çalýþmaya Devam Ediyor
+                        //  Time.deltaTime : 2 Frame Arasý Geçen Süreyi Hesaplar, Bu Süre Farkýný timeScalea Göre Verir, Buyüzden Zaman 0 Olunca Duruyor.
+            //  !!  FixedUpdate Ýse Sistemin Ürettiði Zaman Aralýklarýyla Çalýþtýðý Ýçin TimeScale=0dan Etkileniyor, Ýindeki Herþey Duruyor
+
                                 //  Yön Ve Haraket Girdileri
         moveInput = 0f;
         if (Input.GetKey(KeyCode.A))
@@ -80,9 +85,6 @@ public class Player : MonoBehaviour
             if (isFacingRight) direction = Directions.Right;
             if (!isFacingRight) direction = Directions.Left;
         }
-
-            rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);  // 
-
 
                                 //  Zýplama Mekanikleri
         if (isGrounded) //  Yerle Temasta Ýken Sayaç Kapalý Ve Pozitif durumda, Zýplama Ýzinlerinden Biri Buranýn Pozitif Olmasý

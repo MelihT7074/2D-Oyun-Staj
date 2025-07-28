@@ -6,6 +6,7 @@ public class CameraContorller : MonoBehaviour
     [Header("Managers")]
     public Player player;
     public GameDirector gameDirector;
+    public EscAndOptions escAndOptions;
 
     [Header("Kamera Ayarlarý")]
     public Camera MainCamera;
@@ -24,6 +25,7 @@ public class CameraContorller : MonoBehaviour
     private void Start()
     {
         camOgPos = MainCamera.transform.position;
+
     }
 
     private void LateUpdate()   //  Normal Updateden 1 Kare sonra Çaðrýlýr, Karakter Girdileri Aldýðýmýz Ýçin Kamera Takibinin, Girdilerden Sonra Olamsý Daha Ýyi
@@ -38,7 +40,7 @@ public class CameraContorller : MonoBehaviour
 
     public void CameraPosSwitch_Player()
     {
-        if (player.isAlive)         //  Haraket Ediyorken Kameranýn Karakteri Takip Etmesi Ýçin
+        if (player.isAlive && escAndOptions.currentOpenMenu == "None")         //  Haraket Ediyorken Kameranýn Karakteri Takip Etmesi Ýçin
         {
             camTransitionSpeed = player.speed * 2;
 
@@ -65,11 +67,19 @@ public class CameraContorller : MonoBehaviour
             }
             lookOffset = Vector3.Lerp(lookOffset, targetLookOffset, lookTransitionSpeed * Time.deltaTime);
         }
-        else                //  Ölünce Buraya Ölüm Ekraný Falan Çaðrýlmalý
+        else                //  Ölünce Buraya Ölüm Ekraný Falan Çaðrýlmalý,     Þuanlýk Esc Menusunu Hedefliyor, Ýlerde Ýyileþtirme Yapýlýnlamý
         {
             camTargetPos = camOgPos;
         }
     }
 
+
+    public void CameraPosSwitch_EscMenus()
+    {
+        if (escAndOptions.currentOpenMenu == "Esc")
+        {
+            
+        }
+    }
 
 }
