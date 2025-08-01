@@ -3,12 +3,14 @@ using UnityEngine;
 public class EscAndOptions : MonoBehaviour
 {
     [Header("Managerse")]
+    public Player Player;
     public GameDirector gameDirector;
 
     [Header("Menuler")]
     public MenuTypes menuType;
     public string currentOpenMenu;
 
+    public GameObject menus;        //  Tüm Menülerin Baðlý Olduðu Ana Obje
     public GameObject escMenu;
 
 
@@ -36,6 +38,8 @@ public class EscAndOptions : MonoBehaviour
 
     public void StopGameOpenEsc()
     {
+        menus.transform.position = Player.transform.position;
+
         Time.timeScale = 0f;        //  Zaman Akýþýný Durduruyor
 
         menuType = MenuTypes.Esc;
@@ -53,6 +57,11 @@ public class EscAndOptions : MonoBehaviour
 
         escMenu.SetActive(false);   //  Menüyü Kapatýyor
 
+    }
+
+    public void RestartGame()
+    {
+        gameDirector.RestartGame();
     }
 
     public void CloseGame()

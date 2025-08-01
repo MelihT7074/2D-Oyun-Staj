@@ -69,16 +69,16 @@ public class CameraContorller : MonoBehaviour
         }
         else                //  Ölünce Buraya Ölüm Ekraný Falan Çaðrýlmalý,     Þuanlýk Esc Menusunu Hedefliyor, Ýlerde Ýyileþtirme Yapýlýnlamý
         {
-            camTargetPos = camOgPos;
+            CameraPosSwitch_EscMenus();
         }
     }
-
 
     public void CameraPosSwitch_EscMenus()
     {
         if (escAndOptions.currentOpenMenu == "Esc")
         {
-            
+            camTargetPos = player.transform.position;
+            camTargetPos.z = camOgPos.z;
         }
     }
 
