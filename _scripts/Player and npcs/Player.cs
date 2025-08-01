@@ -46,9 +46,10 @@ public class Player : MonoBehaviour
 
     [Header("Raycast ile Zemin Kontrolü")]      //  Karakterin Ayaðýndan Aþaðýya Doðru Kýsa Iþýnlar Göndererek Yere Temas Edip Etmediðini Anlamak Ýçin Sistem  
     public Transform leftRayOrigin;         //  Karakterin Sol Ayaðýndaki Iþýnýn Baþlangýç Konumu
+    public Transform middleRayOrigin;       //  Karakterin Ortasýndaki Iþýnýn Baþlangýç Konumu,     Ýnce Nesnelerin Üstündeyken Atlamasýný Kolaylaþtýrmak Ýçin
     public Transform rightRayOrigin;        //  Karakterin Sað Ayaðýndaki Iþýnýn Baþlangýç Konumu
     public float rayLength;                 //  Iþýnlarýn Uzunluðu
-    public LayerMask groundLayer;           //  Ýstenilen Temas Bölgesi
+    public LayerMask jumpAreas;             //  Ýstenilen Temas Bölgeleri,  Engellerinde Üstünden Zýplayabilmesi için
 
     public bool isGrounded = false;         //  Iþýnlardan Herhangibiri Deðidiðinde True Oluyor Ve Zýplayabiliyoruz
     public bool isFacingRight = false;      //  Karakterin Baktýðý Yön, Tersine Harekette Karakterin Boyutunu Tersine Çevirerek Baktýðý Yönü Deðiþtiriyoruz
@@ -248,13 +249,15 @@ public class Player : MonoBehaviour
     private void GroundCheckRaycast()
     {
                     //  Iþýn Çekilirken: Baþlangýç Noktasý, Iþýnýn Yönü, Iþýnýn Uzunluðu, Temas Bölgesi
-        bool leftHit = Physics2D.Raycast(leftRayOrigin.position, Vector2.down, rayLength, groundLayer);
-        bool rightHit = Physics2D.Raycast(rightRayOrigin.position, Vector2.down, rayLength, groundLayer);
+        bool leftHit    = Physics2D.Raycast(leftRayOrigin.position, Vector2.down, rayLength, jumpAreas);
+        bool middleHit  = Physics2D.Raycast(middleRayOrigin.position, Vector2.down, rayLength, jumpAreas);
+        bool rightHit   = Physics2D.Raycast(rightRayOrigin.position, Vector2.down, rayLength, jumpAreas);
 
-        isGrounded = leftHit || rightHit;
+        isGrounded = leftHit || middleHit || rightHit;
 
         // Editörde Gözükmesi Ýçin.                                     (Sorgu ? true : false) Kýsa Ýf Else Gibi
         Debug.DrawRay(leftRayOrigin.position, Vector2.down * rayLength, leftHit ? Color.green : Color.red);
+        Debug.DrawRay(middleRayOrigin.position, Vector2.down * rayLength, leftHit ? Color.green : Color.red);
         Debug.DrawRay(rightRayOrigin.position, Vector2.down * rayLength, rightHit ? Color.green : Color.red);
     
     }
