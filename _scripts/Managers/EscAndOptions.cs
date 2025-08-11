@@ -3,7 +3,7 @@ using UnityEngine;
 public class EscAndOptions : MonoBehaviour
 {
     [Header("Managerse")]
-    public Player Player;
+    public Player player;
     public GameDirector gameDirector;
 
     [Header("Menuler")]
@@ -38,14 +38,17 @@ public class EscAndOptions : MonoBehaviour
 
     public void StopGameOpenEsc()
     {
-        menus.transform.position = Player.transform.position;
+        menus.transform.position = player.transform.position;
 
         Time.timeScale = 0f;        //  Zaman Akýþýný Durduruyor
 
         menuType = MenuTypes.Esc;
         currentOpenMenu = menuType.ToString();
 
+        player.borderWarning.SetActive(false);  //  Uyarý Ekraný Her Halükarda Kapatýlýyor
+
         escMenu.SetActive(true);    //  Esc Menüsünü Aktif Ediyor
+
     }
 
     public void ContinueGameCloseEsc()
@@ -55,13 +58,21 @@ public class EscAndOptions : MonoBehaviour
         menuType = MenuTypes.None;
         currentOpenMenu = menuType.ToString();
 
+        if (player.onBorder || player.fallLoopCount > 10)
+        {
+            player.borderWarning.SetActive(true);   //  Eðer Kapanmadan Önce Açýksa Tekrar Açýlýyor, Deðilse Kapalý Kalýyor
+        }
+
         escMenu.SetActive(false);   //  Menüyü Kapatýyor
 
+        gameDirector.cursorManager.SetActiveCursor(gameDirector.cursorManager.lst_BasicCursors[0]);     //  Esc Ýle Kapatýlýnca Ýmlec Deðiþimi Gerçekleþmiyor, Buda Çözüm
     }
 
     public void RestartGame()
     {
         gameDirector.RestartGame();
+
+        ContinueGameCloseEsc();         //  Þuanlýk Böye Kalsýn
     }
 
     public void CloseGame()

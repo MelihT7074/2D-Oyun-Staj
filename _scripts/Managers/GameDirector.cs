@@ -26,8 +26,8 @@ public class GameDirector : MonoBehaviour
 
     public void RestartGame()
     {
-        levelManager.RestartLevelManager();
         player.RestartPlayer();
+        levelManager.RestartLevelManager();
     }
 
 }

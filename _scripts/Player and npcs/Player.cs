@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,6 +8,7 @@ public class Player : MonoBehaviour
     public GameDirector gameDirector;
     public CameraContorller cameraContorller;
 
+    [Space]
     [Header("Can Ayarlarý")]
     public bool isAlive = true;
     public float hp;                //  Toplam Can
@@ -16,11 +18,14 @@ public class Player : MonoBehaviour
     public bool hpRefillStart;      //  Can Doldurmaya Baþlama Onayý, Hasar Alýnca Kapanýyor
     public float hpRefillAmount;    //  Can Dolum Miktarý
     public Image healtBar;          //  Can Barý
-        
-                                //  Bunlar Ýlerde Düþmanlara Geçmeli,   Þuanlýk Test Amaçlý Buradalar
-    public float dmgTakenTime;      //  
-    public float lastDmgTime = 0f;  //  
 
+    [Space]
+    [Header("Yedekler")]    //  
+    public float hpClon;
+    public float hpRefillTimerClon;
+    public float borderDmgStartTimerClon;
+
+    [Space]
     [Header("Hareket Ayarlarý")]
     public Rigidbody2D rb;              //  Fiziksel Ýþlemlerin Yapýlýnabilinmesi Ýçin Bileþen, Ýnsan Ýskeleti, Kas Sistemi Gibi Birþey
     public float speed;
@@ -44,6 +49,7 @@ public class Player : MonoBehaviour
     public float jumpBufferTime;
     public float jumpBufferTimeCounter;
 
+    [Space]
     [Header("Raycast ile Zemin Kontrolü")]      //  Karakterin Ayaðýndan Aþaðýya Doðru Kýsa Iþýnlar Göndererek Yere Temas Edip Etmediðini Anlamak Ýçin Sistem  
     public Transform leftRayOrigin;         //  Karakterin Sol Ayaðýndaki Iþýnýn Baþlangýç Konumu
     public Transform middleRayOrigin;       //  Karakterin Ortasýndaki Iþýnýn Baþlangýç Konumu,     Ýnce Nesnelerin Üstündeyken Atlamasýný Kolaylaþtýrmak Ýçin
@@ -54,6 +60,16 @@ public class Player : MonoBehaviour
     public bool isGrounded = false;         //  Iþýnlardan Herhangibiri Deðidiðinde True Oluyor Ve Zýplayabiliyoruz
     public bool isFacingRight = false;      //  Karakterin Baktýðý Yön, Tersine Harekette Karakterin Boyutunu Tersine Çevirerek Baktýðý Yönü Deðiþtiriyoruz
 
+    [Space]
+    [Header("Map Sýnýrý Hasar Ayarlarý")]
+    public GameObject borderWarning;
+    public Text txt_leaveTimer;
+    public int fallLoopCount;               //  Düþme Döngüsüne Girersek Uyarýyý Göstermek Ýçin
+    public bool onBorder = false;           //  Map Sýnýrýndan Çýkarsak Uyarýyý Göstermek Ýçin
+    public float borderDmgStartTimer = 5;   //  Hasar Almaya Baþlamadan Önceki Süre
+    public float borderDmgTakenTime;        //  Hasar Alma Aralýðý
+    public float lastBorderDmgTakenTime;    //  Hasar Aldýðýmýzdaki Süre, Oyun Süresinden Çýkartýnca Hasar Aralýðýndan Fazla Ýse Hasar Alýyoruz
+
 
     public enum Directions
     {   //   0    1    2      3     4
@@ -62,8 +78,7 @@ public class Player : MonoBehaviour
 
     void Start()        //  Oyun Baþlayýp Herþey Hazýrlanýdðýnda Ýlk Çalýþan Method
     {
-        rb = GetComponent<Rigidbody2D>();
-        currentHp = hp;
+        PlayerAbilitysClon();
     }
 
     public void RestartPlayer()
@@ -71,10 +86,17 @@ public class Player : MonoBehaviour
         gameObject.SetActive(true);
         isAlive = true;
 
-        currentHp = hp;             //
+        currentHp = hpClon;             //
 
         rb = GetComponent<Rigidbody2D>();
         rb.position = new Vector2(2, 2);        //  Ýlerde Spawn noktalarý Oluþturup Oradan Seçmek Daha Ýyi olur
+    }
+
+    public void PlayerAbilitysClon()    //  Daha Ýyi Ýsim Bulunmalý,
+    {
+        hpClon = hp;
+        hpRefillTimerClon = hpRefillTimer;
+        borderDmgStartTimerClon = borderDmgStartTimer;
     }
 
     public void Death()
@@ -83,11 +105,11 @@ public class Player : MonoBehaviour
         gameObject.SetActive(false);
     }
 
-    public void TakeDamage(int damageCount)
+    public void TakeDamage(float damageCount)
     {
         currentHp -= damageCount;                           //  Hasar Miktarýna Göre Can Azaltýyor
         hpRefillStart = false;                              //  Hasar Alýnca Can Dolumunu Durdurmak Ýçin
-        hpRefillTimer = 3;                                  //  Doldurma Zamanlayýcýsýný Sýfýrlýyor
+        hpRefillTimer = hpRefillTimerClon;                  //  Doldurma Zamanlayýcýsýný Sýfýrlýyor
         hpRefillTimerStart = true;                          //  Can Doldurma Süresini Aktifleþtiriyor
     }
 
@@ -128,6 +150,7 @@ public class Player : MonoBehaviour
         if (isGrounded) //  Yerle Temasta Ýken Sayaç Kapalý Ve Pozitif durumda, Zýplama Ýzinlerinden Biri Buranýn Pozitif Olmasý
         {
             coyoteTimeCounter = coyoteTime;
+            fallLoopCount = 0;      //  Düþme Döngüsü Bitiyor
         }
         else            //  Yerle Temas Kesildiðinde Sayaç Baþlýyor, Negatife Düþerse Zýplama Avantajý Kayboluyor
         {
@@ -185,7 +208,7 @@ public class Player : MonoBehaviour
             {
                 hpRefillStart = true;                           //  Dolum Onayý
                 hpRefillTimerStart = false;                     //  Sayacý Durdurup
-                hpRefillTimer = 5;                              //  Süreyi Eski Haline getirme
+                hpRefillTimer = hpRefillTimerClon;              //  Süreyi Eski Haline getirme
             }
         }
 
@@ -194,10 +217,51 @@ public class Player : MonoBehaviour
             Death();        //  Ölüm
         }
 
+                                //  Map Sýnýrýný Geçince Veya Düþme Döngüsüne Girince Uyarý Ve Hasar Alma
+        if (onBorder || fallLoopCount > 10)
+        {
+            borderWarning.SetActive(true);
+
+            if (borderDmgStartTimer >= 0)
+            {
+                borderDmgStartTimer -= Time.deltaTime;
+
+                txt_leaveTimer.text = borderDmgStartTimer.ToString("0");    //  Tam Sayý olarak Yazdýrýlýyor, Belli Bir Küsürat Ýçin = "0.###"
+            }
+            else
+            {
+                if (Time.time - lastBorderDmgTakenTime >= borderDmgTakenTime)
+                {
+                    TakeDamage(15);
+
+                    lastBorderDmgTakenTime = Time.time;
+                }
+                txt_leaveTimer.text = "!!!     !!!".ToString();
+            }
+        }
+        else
+        {
+            borderWarning.SetActive(false);
+
+            borderDmgStartTimer += Time.deltaTime;
+
+            if (borderDmgStartTimer >= borderDmgStartTimerClon)
+            {
+                borderDmgStartTimer = borderDmgStartTimerClon;  //  Fazlalýk Küsüratý Kýrpma
+            }
+        }
 
 
         GroundCheckRaycast();
         FlipPlayerX();
+    }
+
+    private void LateUpdate()
+    {
+        if (onBorder || fallLoopCount > 10)
+        {
+            borderWarning.transform.position = new Vector2(transform.position.x, transform.position.y);
+        }
     }
 
     private void FixedUpdate()  //  Sabit Aralýklarla Çalýþan kýsým, Sanýrým 0.02sn de Bir Çaðrýlýyor, Fiziksel Ýþlemler Yapmak Ýçin Daha Ýyi
@@ -222,29 +286,27 @@ public class Player : MonoBehaviour
     {
         if (collision.CompareTag("FallZone"))
         {
+            fallLoopCount += 1;     //  Her Düþtüðümüzde Artýyor, Yerle Temasda Sýfýrlanýyor;
+
             transform.position = new Vector2(transform.position.x, transform.position.y + 20);
         }
         if (collision.CompareTag("Deadzone"))
         {
             Death();
         }
-
-    }
-
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        if (collision.transform.CompareTag("dmgWall"))      //  Hasar Test Kýsmý Þuanlýk        Ýncelemek Lazým
+        if (collision.CompareTag("MapBorder"))
         {
-            if (Time.time - lastDmgTime >= dmgTakenTime)
-            {
-                TakeDamage(45);
-
-                lastDmgTime = Time.time;
-            }
-
+            onBorder = true;
         }
     }
 
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("MapBorder"))
+        {
+            onBorder = false;
+        }
+    }
 
     private void GroundCheckRaycast()
     {
@@ -280,6 +342,10 @@ public class Player : MonoBehaviour
         Vector3 ls = transform.localScale;      //  Karakterin Boyutu
         ls.x *= -1;                             //  Döndürmek Ýçin Boyutu X Ekseninde Ters Çeviriyoruz
         transform.localScale = ls;
+                                        //  Can Barýnýn Yönünü Sabit Kýlmak Ýçin
+        Vector3 hpls = healtBar.transform.localScale;
+        hpls.x *= -1;
+        healtBar.transform.localScale = hpls;
     }
 
 
