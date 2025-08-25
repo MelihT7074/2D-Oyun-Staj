@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 
     [Space]
     [Header("Can Ayarlarý")]
+    public GameObject SpawnPos;
     public bool isAlive = true;
     public float hp;                //  Toplam Can
     public float currentHp;         //  Mecvut Can
@@ -19,19 +20,21 @@ public class Player : MonoBehaviour
     public float hpRefillAmount;    //  Can Dolum Miktarý
     public Image healtBar;          //  Can Barý
 
-    [Space]
-    [Header("Yedekler")]    //  
-    public float hpClon;
-    public float hpRefillTimerClon;
-    public float borderDmgStartTimerClon;
+    //[Header("Yedekler")]    //  
+    private float hpClon;
+    private float hpRefillTimerClon;
+    private float borderDmgStartTimerClon;
 
     [Space]
     [Header("Hareket Ayarlarý")]
     public Rigidbody2D rb;              //  Fiziksel Ýþlemlerin Yapýlýnabilinmesi Ýçin Bileþen, Ýnsan Ýskeleti, Kas Sistemi Gibi Birþey
+    public bool showVelocity;
     public float speed;
     public float jumpForce;
 
     public Directions direction;
+    public Vector2 directionInputs;
+    public bool isFacingRight = false;      //  Karakterin Baktýðý Yön, Tersine Harekette Karakterin Boyutunu Tersine Çevirerek Baktýðý Yönü Deðiþtiriyoruz
     public bool isMoving =>     //  Get Set Kullanmanýn Kýsa Yolu, Fazla Bir Bilgim Yok Ama Aþþaðýdaki Ýþlemlere Göre Return Tarzý Deðer Gönderiyor
         Mathf.Abs(moveInput) > 0.01f && Mathf.Abs(rb.linearVelocity.x) > 0.05f && Mathf.Abs(rb.linearVelocity.y) > 0.05f;   //  Mathf.Abs : Mutlak Deðer Alma
 
@@ -40,25 +43,46 @@ public class Player : MonoBehaviour
     public float jumpForceLimit;    //  Maksimum Zýplama Yüksekliði, Gereksiz Gibi Aslýnda
 
     public float moveInput = 0f;    //  linearVelocity Rigidbodynin Doðrusal Hýzýnýna Eriþmek Ýçin Kullanýlýyor, X Eksenindeki +- Sað-Soldaki Süratini, Ydeki Yukarý-Aþþaðýki Süratini Gösteriyor
-                                        //  moveInputlada Yön Bilgisini Girip speedle Çarpýp Sürati Veriyoruz 
+                                    //  moveInputlada Yön Bilgisini Girip speedle Çarpýp Sürati Veriyoruz 
     public bool jumpRequested = false;
-                                    //  Ayaðýn Yerden Temasýnýn Kesilmesinden Kýsa Bir Süre Sonra Zýplamayý Mümkün Kýlmak Ýçin Zamanalyýcý
+    //  Ayaðýn Yerden Temasýnýn Kesilmesinden Kýsa Bir Süre Sonra Zýplamayý Mümkün Kýlmak Ýçin Zamanalyýcý
     public float coyoteTime;
     public float coyoteTimeCounter;
-                                    //  Yere Deðmeden Kýsa Bir Süre Önce Zýplamaya Basarsak Yere Deðidiðimiz Gibi Zýplatmasý Ýçin Zamanlayýcý
+    //  Yere Deðmeden Kýsa Bir Süre Önce Zýplamaya Basarsak Yere Deðidiðimiz Gibi Zýplatmasý Ýçin Zamanlayýcý
     public float jumpBufferTime;
     public float jumpBufferTimeCounter;
+
+    [Space]     //  Karaker Zýplayýp Duvara Temas Ederse Ve Duvar Yönünde Ýlerlemeye Çalýþýrsa Havada Asýlý Kalýyordu, Bu Onu Birazcýk Fixliyor Ve Yeni Mekanikler Ekliyor
+    [Header("Duvardan Kayma")]                  //  Asýl Fixleyen Þey Karakterin Colliderýna Sürtünmesiz Bir Materyal Vermek Oldu
+    public Transform wallCheck;
+    public float lapLength;
+    public LayerMask wallAreas;
+
+    public bool isWallSliding = false;
+    public float wallSlidingSpeed;
+
+    [Space]
+    [Header("Duvardan Zýplama")]
+    public bool isWallJumping;          //  Zýplama Onayý Ve Diðer Hareket Girdilierini Çakýþma Olmamasý Ýçin Kapatma,
+    public float wallJumpingDirection;  //  Zýplamanýn Yönü, Duvara Ters Yani Oyuncunun Baktýðý Yönün Zýttý Olamlý
+    public float wallJumpingTime;       
+    public float wallJumpingCounter;    
+    public float wallJumpingDuration;   
+    public Vector2 walljumpingPower;    //  X ve Y Ekseninde Uygulanacak Güç
 
     [Space]
     [Header("Raycast ile Zemin Kontrolü")]      //  Karakterin Ayaðýndan Aþaðýya Doðru Kýsa Iþýnlar Göndererek Yere Temas Edip Etmediðini Anlamak Ýçin Sistem  
     public Transform leftRayOrigin;         //  Karakterin Sol Ayaðýndaki Iþýnýn Baþlangýç Konumu
+    public bool leftHit;
     public Transform middleRayOrigin;       //  Karakterin Ortasýndaki Iþýnýn Baþlangýç Konumu,     Ýnce Nesnelerin Üstündeyken Atlamasýný Kolaylaþtýrmak Ýçin
+    public bool middleHit;
     public Transform rightRayOrigin;        //  Karakterin Sað Ayaðýndaki Iþýnýn Baþlangýç Konumu
+    public bool rightHit;
+
     public float rayLength;                 //  Iþýnlarýn Uzunluðu
     public LayerMask jumpAreas;             //  Ýstenilen Temas Bölgeleri,  Engellerinde Üstünden Zýplayabilmesi için
 
     public bool isGrounded = false;         //  Iþýnlardan Herhangibiri Deðidiðinde True Oluyor Ve Zýplayabiliyoruz
-    public bool isFacingRight = false;      //  Karakterin Baktýðý Yön, Tersine Harekette Karakterin Boyutunu Tersine Çevirerek Baktýðý Yönü Deðiþtiriyoruz
 
     [Space]
     [Header("Map Sýnýrý Hasar Ayarlarý")]
@@ -72,8 +96,8 @@ public class Player : MonoBehaviour
 
 
     public enum Directions
-    {   //   0    1    2      3     4
-            Up, Down, Left, Right, None 
+    {   //   0    1    2      3     
+            Up, Down, Left, Right,
     }
 
     void Start()        //  Oyun Baþlayýp Herþey Hazýrlanýdðýnda Ýlk Çalýþan Method
@@ -89,7 +113,7 @@ public class Player : MonoBehaviour
         currentHp = hpClon;             //
 
         rb = GetComponent<Rigidbody2D>();
-        rb.position = new Vector2(2, 2);        //  Ýlerde Spawn noktalarý Oluþturup Oradan Seçmek Daha Ýyi olur
+        rb.position = new Vector2(SpawnPos.transform.position.x, SpawnPos.transform.position.y + 1);
     }
 
     public void PlayerAbilitysClon()    //  Daha Ýyi Ýsim Bulunmalý,
@@ -107,6 +131,7 @@ public class Player : MonoBehaviour
 
     public void TakeDamage(float damageCount)
     {
+        SoundManager.Instance.PlayMusic("PlayerDamageSound");
         currentHp -= damageCount;                           //  Hasar Miktarýna Göre Can Azaltýyor
         hpRefillStart = false;                              //  Hasar Alýnca Can Dolumunu Durdurmak Ýçin
         hpRefillTimer = hpRefillTimerClon;                  //  Doldurma Zamanlayýcýsýný Sýfýrlýyor
@@ -116,34 +141,57 @@ public class Player : MonoBehaviour
     void Update()   //  Her Framede Çalýþan Kýsým, Fps'e Baðlý Olduðu Ýçin Pc nin Kalitesine Göre Çalýþma Sýklýðý Deðiþiyor, Girdi Alma, Fizik Dýþý Ýþlemler Ýçin fln kullanýlýr
     {
         if (Time.timeScale == 0) return;    //  Oyun Durduðunda Girdi Alýmlarýný Falan Kapatmak Ýçin Çünkü;
-            //  !!  Update Pcnin Ürettiði Her Karede Çalýþtýðý Ýçin Oyun Zamanýnýn Durmasýndan Etkilenmiyor, Ýçindeki Time.deltaTime Kýsýmlarý Hariç Herþey Çalýþmaya Devam Ediyor
-                        //  Time.deltaTime : 2 Frame Arasý Geçen Süreyi Hesaplar, Bu Süre Farkýný timeScalea Göre Verir, Buyüzden Zaman 0 Olunca Duruyor.
-            //  !!  FixedUpdate Ýse Sistemin Ürettiði Zaman Aralýklarýyla Çalýþtýðý Ýçin TimeScale=0dan Etkileniyor, Ýindeki Herþey Duruyor
+                                            //  !!  Update Pcnin Ürettiði Her Karede Çalýþtýðý Ýçin Oyun Zamanýnýn Durmasýndan Etkilenmiyor, Ýçindeki Time.deltaTime Kýsýmlarý Hariç Herþey Çalýþmaya Devam Ediyor
+                                            //  Time.deltaTime : 2 Frame Arasý Geçen Süreyi Hesaplar, Bu Süre Farkýný timeScalea Göre Verir, Buyüzden Zaman 0 Olunca Duruyor.
+                                            //  !!  FixedUpdate Ýse Sistemin Ürettiði Zaman Aralýklarýyla Çalýþtýðý Ýçin TimeScale=0dan Etkileniyor, Ýindeki Herþey Duruyor
 
                                 //  Yön Ve Haraket Girdileri
         moveInput = 0f;
         if (Input.GetKey(KeyCode.A))
         {
-            moveInput = -1f; 
+            moveInput = -1f;
             direction = Directions.Left;
+            directionInputs = new Vector2(-1, 0);
+
+            if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+            { 
+                Debug.Log("Yatay Hareket Girdisi (Sol) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
+            }
         }
         else if (Input.GetKey(KeyCode.D))
         {
             moveInput = 1f;
             direction = Directions.Right;
+            directionInputs = new Vector2(1, 0);
+
+            if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+            {
+                Debug.Log("Yatay Hareket Girdisi (Sað) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
+            }
         }
         else if (Input.GetKey(KeyCode.W))
         {
             direction = Directions.Up;
+            directionInputs = new Vector2(directionInputs.x, 1);
         }
         else if (Input.GetKey(KeyCode.S))
         {
             direction = Directions.Down;
+            directionInputs = new Vector2(directionInputs.x, -1);
         }
         else
         {
-            if (isFacingRight) direction = Directions.Right;
-            if (!isFacingRight) direction = Directions.Left;
+            if (isFacingRight)
+            {
+                direction = Directions.Right;
+                directionInputs = new Vector2(1, 0);
+            }
+            else if (!isFacingRight)
+            {
+                direction = Directions.Left;
+                directionInputs = new Vector2(-1, 0);
+            }
+
         }
 
                                 //  Zýplama Mekanikleri
@@ -182,7 +230,7 @@ public class Player : MonoBehaviour
         }
 
 
-                                //  Can Ayarlarý
+                                    //  Can Ayarlarý
         if (currentHp <= hp)
         {
             if (hpRefillStart == true)                          //  Onay Gelirse Can Doldurma Ýþlemi Baþlýyor
@@ -217,7 +265,7 @@ public class Player : MonoBehaviour
             Death();        //  Ölüm
         }
 
-                                //  Map Sýnýrýný Geçince Veya Düþme Döngüsüne Girince Uyarý Ve Hasar Alma
+                                    //  Map Sýnýrýný Geçince Veya Düþme Döngüsüne Girince Uyarý Ve Hasar Alma
         if (onBorder || fallLoopCount > 10)
         {
             borderWarning.SetActive(true);
@@ -251,9 +299,15 @@ public class Player : MonoBehaviour
             }
         }
 
+        WallSlide();
+        WallJumping();
 
         GroundCheckRaycast();
-        FlipPlayerX();
+
+        if (!isWallJumping)
+        {
+            FlipPlayerX();
+        }
     }
 
     private void LateUpdate()
@@ -266,21 +320,156 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()  //  Sabit Aralýklarla Çalýþan kýsým, Sanýrým 0.02sn de Bir Çaðrýlýyor, Fiziksel Ýþlemler Yapmak Ýçin Daha Ýyi
     {
-            
-        rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);    //  Yatay Haraket,
-
-        if (jumpRequested)      //  Zýplama
+        if (!isWallJumping)
         {
-            rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
-            jumpRequested = false;
-        }
-                                //  Hýz Sýnýrlamalarý
-        float clampedX = Mathf.Clamp(rb.linearVelocity.x, -maxSpeed, maxSpeed);    //  Mathf.Clamp : Belirtilen Deðeri Sýnýrlar, Burasý Yatay Hýzý Sýnýrlýyor
-        float clampedY = Mathf.Clamp(rb.linearVelocity.y, -fallSpeedLimit, jumpForceLimit);    // Burasýda Düþme Ve Zýplama Hýzýný Sýnýrlýyor
+            rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);    //  Yatay Haraket
 
-        rb.linearVelocity = new Vector2(clampedX, clampedY);
+            if (isWallSliding)      //  Kayma Þartlarý Gerçekleþtiyse x Eksenindeki Hareketi Kýsýtlayýp Yavaþça Aþaðýya Doðru Kayýyoruz
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, Mathf.Clamp(rb.linearVelocity.y, -wallSlidingSpeed, float.MaxValue));    //**
+
+                if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+                {
+                    Debug.Log("Kayma Gerçekleþti, velocity : " + rb.linearVelocity);
+                }
+            }
+
+            if (jumpRequested)      //  Zýplama
+            {
+                rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+
+                if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+                {
+                    Debug.Log("Zýplama Gerçekleþti, velocity : " + rb.linearVelocity);
+                }
+
+                jumpRequested = false;
+            }
+            //  Hýz Sýnýrlamalarý
+            float clampedX = Mathf.Clamp(rb.linearVelocity.x, -maxSpeed, maxSpeed);    //  Mathf.Clamp : Belirtilen Deðeri Sýnýrlar, Burasý Yatay Hýzý Sýnýrlýyor
+            float clampedY = Mathf.Clamp(rb.linearVelocity.y, -fallSpeedLimit, jumpForceLimit);    // Burasýda Düþme Ve Zýplama Hýzýný Sýnýrlýyor
+
+            rb.linearVelocity = new Vector2(clampedX, clampedY);
+        }
+        if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+        {
+            Debug.Log("Player velocity : " + rb.linearVelocity);
+        }
     }
 
+    private void WallJumping()
+    {
+        if (isWallSliding)
+        {
+            isWallJumping = false;
+            wallJumpingDirection = -directionInputs.x;
+            wallJumpingCounter = wallJumpingTime;
+
+            CancelInvoke(nameof(StopWallJumping));
+        }
+        else
+        {
+            wallJumpingCounter -= Time.deltaTime;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Space) && wallJumpingCounter > 0f)
+        {
+            isWallJumping = true;
+            rb.linearVelocity = new Vector2(wallJumpingDirection * walljumpingPower.x, walljumpingPower.y);
+            wallJumpingCounter = 0f;
+
+            if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+            {
+                Debug.Log("Player direction : " + (transform.localScale.x > 0 ? "1 (Sol)" : "-1 (Sað)") +
+                    ", WallJump direction : " + (wallJumpingDirection > 0 ? "1 (Sað)" : "-1 (Sol)") +
+                    ", velocity : " + rb.linearVelocity);
+            }
+
+            if (transform.localScale.x == wallJumpingDirection)
+            {
+                FlipX();
+            }
+
+            Invoke(nameof(StopWallJumping), wallJumpingDuration);
+
+            if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+            {
+                Debug.Log("Duvardan Zýplama Gerçekleþti, velocity : " + rb.linearVelocity);
+            }
+
+        }
+
+        if (moveInput == wallJumpingDirection)      //  Kýsa Sýçramalar Yapmak Ýçin
+        {
+            StopWallJumping();
+        }
+    }
+
+    private void StopWallJumping()  //  Invoke Ýle Belli Bir Zaman Sonra Çaðýrmak Ýçin Ayrý Methodda
+    {
+        isWallJumping = false;
+    }
+
+    private void GroundCheckRaycast()
+    {
+        //  Iþýn Çekilirken: Baþlangýç Noktasý, Iþýnýn Yönü, Iþýnýn Uzunluðu, Temas Bölgesi
+        leftHit     = Physics2D.Raycast(leftRayOrigin.position, Vector2.down, rayLength, jumpAreas);
+        middleHit   = Physics2D.Raycast(middleRayOrigin.position, Vector2.down, rayLength, jumpAreas);
+        rightHit    = Physics2D.Raycast(rightRayOrigin.position, Vector2.down, rayLength, jumpAreas);
+
+        isGrounded = leftHit || middleHit || rightHit;
+    }
+
+    private void WallSlide()    //  Sadece Duvarla Temas Halindeysek Ve Duvara Doðru Hareket Etmeye Çalýþýyorsak Yavaþça Kaydýrmak Ýçin Onay Veriyor
+    {
+        bool touchingWall = Physics2D.OverlapCircle(wallCheck.position, lapLength, wallAreas);  //  Raycaste Benzer Mantýðý Var, Bu Daire Þeklinde Çiziyor, Raycestse Düz Çizgi Olarak çiziyor
+
+        isWallSliding = touchingWall && !isGrounded && moveInput != 0;
+    }
+
+    private void FlipPlayerX()
+    {
+        if ((moveInput > 0 || direction == Directions.Right) && !isFacingRight)         //  Eðer Hýz Pozitif Yani Saða Doðruysa Ve Karakterde Sola Bakýyorsa Karakterin Yönünü Saða Çevirmek Ýçin 
+        {
+            FlipX();
+        }
+        else if ((moveInput < 0 || direction == Directions.Left) && isFacingRight)      //  Eðer Hýz Negatif Yani Sola Doðruysa Ve Karakterde Saða Bakýyorsa Karakterin Yönünü Sola Çevirmek Ýçin  
+        {
+            FlipX();
+        }
+    }
+
+    private void FlipX()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 ls = transform.localScale;      //  Karakterin Boyutu
+        ls.x *= -1;                             //  Döndürmek Ýçin Boyutu X Ekseninde Ters Çeviriyoruz
+        transform.localScale = ls;
+                                        //  Can Barýnýn Yönünü Sabit Kýlmak Ýçin
+        Vector3 hpls = healtBar.transform.localScale;
+        hpls.x *= -1;
+        healtBar.transform.localScale = hpls;
+    }
+
+    private void OnDrawGizmos()     //  Çizgileri Editörde Daha Ýyi Gösteriyor
+    {
+        //      Raycastler, Zemin Kontrolü için
+
+        Gizmos.color = leftHit ? Color.green : Color.red;
+        Gizmos.DrawLine(leftRayOrigin.position, leftRayOrigin.position + Vector3.down * rayLength);
+        Gizmos.color = middleHit ? Color.green : Color.red;
+        Gizmos.DrawLine(middleRayOrigin.position, middleRayOrigin.position + Vector3.down * rayLength);
+        Gizmos.color = rightHit ? Color.green : Color.red;
+        Gizmos.DrawLine(rightRayOrigin.position, rightRayOrigin.position + Vector3.down * rayLength);
+
+        //      Duvar Kontrolü Ýçin Daire Alaný Gösteriyor
+
+        //  (Sorgu ? true : false) Kýsa Ýf Else Gibi
+        Gizmos.color = isWallSliding ? Color.blue : Color.black;
+        Gizmos.DrawWireSphere(wallCheck.position, lapLength);
+    }
+
+                                                        //  Etkileþimler
     private void OnTriggerEnter2D(Collider2D collision)     //  Collider Bileþeni Üzerinden Rigidbodysiz Diðer Nesnelerle Etkileþime Girmek Ýçin
                                                             //  Collider Cisimlerin Etkileþim Alaný, Çarpýþmalar fln Burada Yapýlýyor, Ýnsanýn Derisi Gibi
     {
@@ -288,7 +477,7 @@ public class Player : MonoBehaviour
         {
             fallLoopCount += 1;     //  Her Düþtüðümüzde Artýyor, Yerle Temasda Sýfýrlanýyor;
 
-            transform.position = new Vector2(transform.position.x, transform.position.y + 20);
+            transform.position = new Vector2(transform.position.x, transform.position.y + 15);
         }
         if (collision.CompareTag("Deadzone"))
         {
@@ -307,46 +496,5 @@ public class Player : MonoBehaviour
             onBorder = false;
         }
     }
-
-    private void GroundCheckRaycast()
-    {
-                    //  Iþýn Çekilirken: Baþlangýç Noktasý, Iþýnýn Yönü, Iþýnýn Uzunluðu, Temas Bölgesi
-        bool leftHit    = Physics2D.Raycast(leftRayOrigin.position, Vector2.down, rayLength, jumpAreas);
-        bool middleHit  = Physics2D.Raycast(middleRayOrigin.position, Vector2.down, rayLength, jumpAreas);
-        bool rightHit   = Physics2D.Raycast(rightRayOrigin.position, Vector2.down, rayLength, jumpAreas);
-
-        isGrounded = leftHit || middleHit || rightHit;
-
-        // Editörde Gözükmesi Ýçin.                                     (Sorgu ? true : false) Kýsa Ýf Else Gibi
-        Debug.DrawRay(leftRayOrigin.position, Vector2.down * rayLength, leftHit ? Color.green : Color.red);
-        Debug.DrawRay(middleRayOrigin.position, Vector2.down * rayLength, leftHit ? Color.green : Color.red);
-        Debug.DrawRay(rightRayOrigin.position, Vector2.down * rayLength, rightHit ? Color.green : Color.red);
-    
-    }
-
-    private void FlipPlayerX()
-    {
-        if ((moveInput > 0 || direction == Directions.Right)&& !isFacingRight)        //  Eðer Hýz Pozitif Yani Saða Doðruysa Ve Karakterde Sola Bakýyorsa Karakterin Yönünü Saða Çevirmek Ýçin 
-        {
-            FlipX();
-        }
-        else if ((moveInput < 0 || direction == Directions.Left) && isFacingRight)    //  Eðer Hýz Negatif Yani Sola Doðruysa Ve Karakterde Saða Bakýyorsa Karakterin Yönünü Sola Çevirmek Ýçin  
-        {
-            FlipX();
-        }
-    }
-
-    private void FlipX()
-    {
-        isFacingRight = !isFacingRight;
-        Vector3 ls = transform.localScale;      //  Karakterin Boyutu
-        ls.x *= -1;                             //  Döndürmek Ýçin Boyutu X Ekseninde Ters Çeviriyoruz
-        transform.localScale = ls;
-                                        //  Can Barýnýn Yönünü Sabit Kýlmak Ýçin
-        Vector3 hpls = healtBar.transform.localScale;
-        hpls.x *= -1;
-        healtBar.transform.localScale = hpls;
-    }
-
 
 }

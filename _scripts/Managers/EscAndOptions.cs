@@ -12,11 +12,14 @@ public class EscAndOptions : MonoBehaviour
 
     public GameObject menus;        //  Tüm Menülerin Baðlý Olduðu Ana Obje
     public GameObject escMenu;
+    public GameObject options;
+    public GameObject soundOptions;
+    public GameObject keyboardOptions;
 
 
     public enum MenuTypes
-    {   //   0     1      2
-            None, Esc, Options
+    {   //   0     1      2         3
+            None, Esc, Options, OptionsX
     }
 
     void Update()
@@ -26,6 +29,14 @@ public class EscAndOptions : MonoBehaviour
             if (currentOpenMenu == "None")
             {
                 StopGameOpenEsc();
+            }
+            else if (currentOpenMenu == "Options")
+            {
+                StopGameOpenEsc();
+            }
+            else if (currentOpenMenu == "OptionsX")
+            {
+                OpenOptions();
             }
             else if (currentOpenMenu == "Esc")
             {
@@ -45,10 +56,41 @@ public class EscAndOptions : MonoBehaviour
         menuType = MenuTypes.Esc;
         currentOpenMenu = menuType.ToString();
 
+        gameDirector.SwitchMusic();
+
         player.borderWarning.SetActive(false);  //  Uyarý Ekraný Her Halükarda Kapatýlýyor
 
-        escMenu.SetActive(true);    //  Esc Menüsünü Aktif Ediyor
+        escMenu.SetActive(true);    
+        options.SetActive(false);
+    }
 
+    public void OpenOptions()
+    {
+        menuType = MenuTypes.Options;
+        currentOpenMenu = menuType.ToString();
+
+        escMenu.SetActive(false);
+        options.SetActive(true);
+        soundOptions.SetActive(false);
+        keyboardOptions.SetActive(false);
+    }
+
+    public void SoundOptions()
+    {
+        menuType = MenuTypes.OptionsX;
+        currentOpenMenu = menuType.ToString();
+
+        options.SetActive(false);
+        soundOptions.SetActive(true);
+    }
+
+    public void KeyboardOptions()
+    {
+        menuType = MenuTypes.OptionsX;
+        currentOpenMenu = menuType.ToString();
+
+        options.SetActive(false);
+        keyboardOptions.SetActive(true);
     }
 
     public void ContinueGameCloseEsc()
@@ -58,12 +100,15 @@ public class EscAndOptions : MonoBehaviour
         menuType = MenuTypes.None;
         currentOpenMenu = menuType.ToString();
 
+        gameDirector.SwitchMusic();
+
         if (player.onBorder || player.fallLoopCount > 10)
         {
             player.borderWarning.SetActive(true);   //  Eðer Kapanmadan Önce Açýksa Tekrar Açýlýyor, Deðilse Kapalý Kalýyor
         }
 
-        escMenu.SetActive(false);   //  Menüyü Kapatýyor
+        escMenu.SetActive(false);
+        options.SetActive(false);
 
         gameDirector.cursorManager.SetActiveCursor(gameDirector.cursorManager.lst_BasicCursors[0]);     //  Esc Ýle Kapatýlýnca Ýmlec Deðiþimi Gerçekleþmiyor, Buda Çözüm
     }

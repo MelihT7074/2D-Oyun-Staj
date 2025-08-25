@@ -79,6 +79,7 @@ public class CameraContorller : MonoBehaviour
         {
             camTargetPos = player.transform.position;
             camTargetPos.z = camOgPos.z;
+            lookOffset =  Vector3.zero;
         }
     }
 

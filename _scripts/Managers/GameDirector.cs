@@ -13,6 +13,7 @@ public class GameDirector : MonoBehaviour
     private void Start()
     {
         RestartGame();
+        SwitchMusic();
     }
 
     private void Update()
@@ -29,5 +30,18 @@ public class GameDirector : MonoBehaviour
         player.RestartPlayer();
         levelManager.RestartLevelManager();
     }
+
+    public void SwitchMusic()
+    {
+        if (escAndOptions.currentOpenMenu == "None")
+        {
+            SoundManager.Instance.SwitchMusic("GameMusic");
+        }
+        else
+        {
+            SoundManager.Instance.SwitchMusic("EscMenuMusic");
+        }
+    }
+
 
 }

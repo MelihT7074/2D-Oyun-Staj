@@ -82,6 +82,8 @@ public class DamageWall : MonoBehaviour
 
         rb.bodyType = RigidbodyType2D.Dynamic;     //   Fiziksel Ýþlemlerden Tamamen Etkilenen Tür
         rb.mass = 25;                           //  Kütlesi
+
+        bc.size = new Vector2(0.90f, 0.90f);    //  Colliderýn Boyutu, Dar Alanlardan Daha Rahat Geçmesi Ýçin Biraz Küçülttüm
     }
 
     private void Update()
