@@ -336,6 +336,8 @@ public class Player : MonoBehaviour
 
             if (jumpRequested)      //  Zýplama
             {
+                SoundManager.Instance.PlayMusic("PlayerJumpSound");
+
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
 
                 if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
@@ -375,6 +377,9 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) && wallJumpingCounter > 0f)
         {
             isWallJumping = true;
+
+            SoundManager.Instance.PlayMusic("PlayerJumpSound");
+
             rb.linearVelocity = new Vector2(wallJumpingDirection * walljumpingPower.x, walljumpingPower.y);
             wallJumpingCounter = 0f;
 
