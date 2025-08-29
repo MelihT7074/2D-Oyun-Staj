@@ -6,23 +6,24 @@ using static SoundController;
 
 public class SoundManager : MonoBehaviour
 {
-    public static SoundManager Instance;
-    public SoundController[] soundControllers;
-    [Space]
-    [Space]
-    [Space]
+    public static SoundManager Instance;    //  Eriþimi kolaylaþtýrmak için Yöntem (Özellikle Sahne Deðiþimlerinde Ama bu Projede Yok)
+                                            //  static: Bellekte Sadece 1 Tane Bulundurur, Verildiði Nesneyi Çaðýrmak Ýçin Referansa* Ýhtiyacý Yok, Sýnýfýn Ýsmini Yazmak Yeterli 
+    //  *: Scriptlerde Baþtaki Alanlardaki "public GameDirector gameDirector; (Editörden Atanýlýyor)" Veya Kod Ýçindeki "cursorManager = FindFirstObjectByType<CursorManager>();" Tarzý Þeyler
 
+    public SoundController[] soundControllers;  //  Editörde SoundControllerlarýn Listeleneceði Ve Ayarlanacaðý Alan
+    [Space]
+        //  Kullandýðým Müzikleri Yapan Kiþi Hepsini Benzer Tonda Ve Ayný Sürede Yapmýþ, Bende 2si Arasýnda Geçiþ Yaparken Kaldýðý Yerden Devam Etmesi Ýçin Bunlarý Kullanýyorum
     private SoundController currentMusic;
     private float currentMusicTime = 0f;
 
-    [Header("Sliderlar")]
+    [Header("Sliderlar")]               //  Ses Seviyelerini Ayarlamak Ýçin Sliderlar
     public Slider MasterSlider;
     private float masterVolume = 1f;
     public Slider MusicSlider;
     public Slider SfxSlider;
     public Slider UISlider;
 
-    [Header("Mute Butonlarý")]
+    [Header("Mute Butonlarý")]          //  Susturma Butonlarý, Ve Geri Açýldýklarýnda Sesi Eski Ayarýna Vermek Ýçin Eski Seviyeyi Kaydetme Yeri
     public bool isMasterMuted = false;
     public float lastMasterVolume;
     public Button MasterMuteButton;
@@ -42,19 +43,22 @@ public class SoundManager : MonoBehaviour
 
     private void Awake()        //  Starttanda Önce Çalýþan Kýsým
     {
+                                //--    Sahne Deðiþimlerinde Bu Nesneden Sadece Birtane Olmasý Ýçin Yöntem,
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);  //  Baþke Sahneye Geçiþ Yapýldýðýnda Bu GameObjectin Yok Olmamasýný Saðlamak Ýçin, Þuanlýk Gereksiz Aslýnda
+            DontDestroyOnLoad(gameObject);
         }
         else
         {
             Destroy(gameObject);
         }
+                                //--    Ýlerde Belki Lazým Olur
 
-        foreach (var sound in soundControllers)
+
+        foreach (var sound in soundControllers)     //  Oluþturulan SoundControllerlarý Ayarlama
         {
-            sound.audioSource = gameObject.AddComponent<AudioSource>();
+            sound.audioSource = gameObject.AddComponent<AudioSource>();     //  Ses Kaynaðý Atýyor, Böylece Farklý Sesler Çakýþmadan Ayný Anda Çalabilir
             sound.audioSource.clip = sound.GetRandomClip();
             sound.audioSource.volume = sound.volume;
             sound.audioSource.pitch = sound.pitch;
@@ -65,88 +69,92 @@ public class SoundManager : MonoBehaviour
 
     private void Start()
     {
-                    // Kaydedilmiþ Ayarlarý Getiriyor
-        masterVolume = PlayerPrefs.GetFloat("MasterVolume");
-        float musicVol = PlayerPrefs.GetFloat("MusicVolume");
-        float sfxVol = PlayerPrefs.GetFloat("SFXVolume");
-        float uiVol = PlayerPrefs.GetFloat("UIVolume");
+                    //  Kaydedilmiþ Ayarlarý Getiriyor
+                        //  PlayerPrefs : Unitynin Basit Bir Veri Kaydetme Yöntemi 
+        masterVolume = PlayerPrefs.GetFloat("MasterVolume", 1);         //  Eðer Daha Önceden Kaydedilen Deðer Yoksa 2. Parametreyi Ýþler
+        float musicVol = PlayerPrefs.GetFloat("MusicVolume", 0.7f);
+        float sfxVol = PlayerPrefs.GetFloat("SFXVolume", 0.7f);
+        float uiVol = PlayerPrefs.GetFloat("UIVolume", 0.7f);
 
-                    // Kaydedilmiþ Ayarlarý Ýþliyor
+                    //  Kaydedilmiþ Ayarlarý Görsel Olarak Slideralra Ýþliyor
         MasterSlider.value = masterVolume;
         MusicSlider.value = musicVol;
         SfxSlider.value = sfxVol;
         UISlider.value = uiVol;
 
+                    //  Sliderlar Deðerleri Uyguluyor
         OnMusicVolumeChanged(musicVol);
         OnSFXVolumeChanged(sfxVol);
         OnUIVolumeChanged(uiVol);
         OnMasterVolumeChanged(masterVolume);
     }
 
-    public void PlayMusic(string soundName)
+    public void PlayMusic(string soundName)         //  Ses Çalma
     {
-        SoundController s = Array.Find(soundControllers, sound => sound.soundName == soundName);
+        SoundController s = Array.Find(soundControllers, sound => sound.soundName == soundName);    //  Ýsimle Eþleþen Sesi Buluyor
         if (s == null)
         {
             Debug.Log("Ses : " + soundName + " Bulunamadý");
+            return;
         }
-        s.audioSource.clip = s.GetRandomClip();
-        s.audioSource.Play();
+        s.audioSource.clip = s.GetRandomClip();     //  Ýçinden Sesi Çekiyor
+        s.audioSource.Play();                       //  Sesi Oynatýyor
     }
 
-    public void StopMusic(string soundName)
+    public void StopMusic(string soundName)         //  Sesi Durdurma
     {
-        SoundController s = Array.Find(soundControllers, sound => sound.soundName == soundName);
+        SoundController s = Array.Find(soundControllers, sound => sound.soundName == soundName);    //  Ýsimle Eþleþen Sesi buluyor
         if (s == null)
         {
             Debug.Log("Ses : " + soundName + " Bulunamadý");
+            return;
         }
-        s.audioSource.Stop();
+        s.audioSource.Stop();                       //  Sesi Durduruyor
     }
 
-    public void SwitchMusic(string newSoundName)
+    public void SwitchMusic(string newSoundName)    //  Müzik Deðiþtirme
     {
-        SoundController newMusic = Array.Find(soundControllers, s => s.soundName == newSoundName && s.soundType == SoundType.Music);
+        SoundController newMusic = Array.Find(soundControllers, s => s.soundName == newSoundName && s.soundType == SoundType.Music);    //  Ýsimle Eþleþen Müziði Buluyor
         if (newMusic == null)
         {
             Debug.LogWarning("Yeni müzik bulunamadý: " + newSoundName);
             return;
         }
 
-        if (currentMusic != null && currentMusic.audioSource.isPlaying)
+        if (currentMusic != null && currentMusic.audioSource.isPlaying)     //  Eðer Zaten Müzik Çalýyorsa
         {
-            currentMusicTime = currentMusic.audioSource.time;
-            currentMusic.audioSource.Stop();
+            currentMusicTime = currentMusic.audioSource.time;           //  O Anki Süresini Alýyor
+            currentMusic.audioSource.Stop();                            //  Ve Müziði Durduruyor
         }
 
-        AudioClip clip = newMusic.clip.Count > 0 ? newMusic.clip[0] : null;
+        AudioClip clip = newMusic.clip.Count > 0 ? newMusic.clip[0] : null; //  Yeni Çalacak Olan Müzikteki Ýlk Klibi Alýyor
         if (clip == null)
         {
             Debug.LogWarning("Müzik klibi eksik: " + newSoundName);
             return;
         }
 
-        newMusic.audioSource.clip = clip;
-        newMusic.audioSource.Play();
-        newMusic.audioSource.time = currentMusicTime;
+        newMusic.audioSource.clip = clip;               //  Ses Kaynaðýna Yeni Müziði Veriyor
+        newMusic.audioSource.Play();                    //  Oynatýyor
+        newMusic.audioSource.time = currentMusicTime;   //  Eski Müziðin Kaldýðý Zaman Þuankine Ýþleniyor, Yani Kaldýðý Yerden Devam Ediyor
 
-        currentMusic = newMusic;
+        currentMusic = newMusic;                        //  Güncel Müzik Not Alýnýlýyor
     }
 
 
-    //                                          Ses Seviyesi Sliderlarý Alaný
+    //                                          Ses Seviyesi Sliderlarý Alaný,  Sliderlar Hareket Ettiklerinde Çaðrýlýrlar
 
     public void OnMasterVolumeChanged(float value)
     {
-        masterVolume = value;
-        PlayerPrefs.SetFloat("MasterVolume", value);
-        PlayMusic("MasterSlider");
-        if (value == 0)
+        masterVolume = value;                                   //  Deðeri Ses Türlerinede Ýþlenmesi Ýçin Anasesin Deðerini Ekstra Kaydediyor
+        PlayerPrefs.SetFloat("MasterVolume", value);                //  Deðeri Kaydediyor
+        PlayMusic("MasterSlider");                          //  Ses Efekti
+        if (value == 0)                 //  Ses Seviyesi Sýfýr Olursa Mute Buttonu Birnevi Aktifleþiyor
         {
             MasterMuteButton.image.color = new Color(1, 1, 1, 1);
             isMasterMuted = true;
         }
-        else
+        else                            //  Eðer Mute Buttonu Varken Sliderý Oynatýrsak Mute Buttonunu Kapatýyor
         {
             MasterMuteButton.image.color = new Color(1, 1, 1, 0);
             isMasterMuted = false;
