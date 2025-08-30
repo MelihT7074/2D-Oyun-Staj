@@ -12,6 +12,7 @@ public class CursorController : MonoBehaviour
     public Vector3 buttonOGPos;
     public Vector2 onMouseEffect;
 
+    public string lastMouseSituation;
 
     [Header("Cursor Seçme")]            //  Hangi Cursorun Seçileceðini Göstermek Ýçin
     public int cursorIndex;             //  CursorTypesdaki Index Numaralarý
@@ -35,6 +36,7 @@ public class CursorController : MonoBehaviour
         if (isButton)
         {
             buttonOGPos = button.transform.position;
+            lastMouseSituation = "MouseExit";
         }
     }
 
@@ -63,28 +65,53 @@ public class CursorController : MonoBehaviour
 
         if (isButton)
         {
-            button.transform.position = new Vector2(button.transform.position.x + onMouseEffect.x, button.transform.position.y + onMouseEffect.y);
-            SoundManager.Instance.PlayMusic("ButtonHover");
+            if (lastMouseSituation == "MouseExit")  //*1
+            {
+                lastMouseSituation = "MouseEnter";
+                button.transform.position = new Vector2(button.transform.position.x + onMouseEffect.x, button.transform.position.y + onMouseEffect.y);
+                SoundManager.Instance.PlayMusic("ButtonHover");     //  Ses Efekti
+            }
+            else
+            {
+                OnMouseExit();
+                OnMouseEnter();
+            }
         }
     }
 
-    public void OnMouseExit()               //  Cursor Üstünde Deðilken Olacaklar,  Týklamayada Verilinebilnir
+    public void OnMouseExit()               //  Cursor Üstünde Deðilken Olacaklar,  Týklamayada Verilinebilinir
     {
         cursorManager.SetActiveCursor(cursorManager.lst_BasicCursors[0]);
 
         if (isButton)
         {
-            if (button.transform.position != buttonOGPos)   //  Bu Kýsým Týklamadada Geçerli Olduðu Ýçin Buton Çok Hareket Ediyordu, Bu Fixliyor
+            if (button.transform.position != buttonOGPos)   //*2  
             {
-                button.transform.position = new Vector2(button.transform.position.x - onMouseEffect.x, button.transform.position.y - onMouseEffect.y);
-                buttonOGPos = button.transform.position;
+                lastMouseSituation = "MouseExit";
+                button.transform.position = new Vector2(buttonOGPos.x, buttonOGPos.y);
             }
         }
     }
 
     public void ClickButton()
     {
-        SoundManager.Instance.PlayMusic("ButtonClick");
+        SoundManager.Instance.PlayMusic("ButtonClick");         //  Ses Efekti
     }
 
 }
+
+/*
+    *           //  Açýklamalar
+    * 
+    *   *1 : Mouse, Butonun Üstündeyken Esc Basýlýp Menü Kapanýrsa Menü Ve Ýçindekiler SetActive(false)a Dönüþüp Kapanýyor, Ýþlevsizleniyor
+    *           Yani MouseExit Çalýþamýyor Ve Butonun Konumu MouseEnterdaki Efekte Göre Kalýyor, Eðer Mouse Konumu Deðiþmeden Tekrar Esc Ýle Menü Açýlýnýrsa
+    *           Mouse Butounun Üstüne Geleceði Ýçin Tekrardan Efekt Uyguluyor ve Buton Ýyice Kayýyor, Ne Kadar Tekarara Düþerse Buton O Kadar Sapýyor.
+    *           lastMouseSituationda Son Etkinliði Alýyor Ve Eðer Üstüste 2 Kere onMouseEnter Çaðrýldýysa Önce onMouseExiti Çaðýrýp Butonun Konumunu Düzeltiyor
+    *           Sonra Ýse Tekrar MouseEnterý Çaðýrýp Ýþleri Olmasý Gerektiði Gibi Yapýyor
+    *
+    *   *2 : Yanlýþ Hatýrlamýyorsam MouseExit Hem Mouse Butonun Üzerinden Çýkýnca Hemde Butona Týklayýnca Çalýþtýðý Ýçin (Ýmleç Normale Dönsün Diye Öyle Yaptýydým)
+    *           Buton Fazla Ýleri Gidiyordu, O Zamanlar Mouse Efektini Geri Çekmek içinde Butonun Pozisyonunu Mouse Efektinin Tersiyle topluyordum,
+    *           Asýl Sorunda Bu Oluyordu Gerçi
+    *
+    *       //  Daha Baþka Buglarda Vardý Ama Neylerdi Ve Nasýl Fixledim Hiç Hatýrlamýyom, Biraz Karýþýk Burasý Benim Ýçin    
+*/

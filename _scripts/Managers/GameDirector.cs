@@ -22,7 +22,6 @@ public class GameDirector : MonoBehaviour
         {
             RestartGame();
         }
-
     }
 
     public void RestartGame()

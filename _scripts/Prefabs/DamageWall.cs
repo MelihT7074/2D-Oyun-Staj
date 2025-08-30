@@ -15,6 +15,7 @@ public class DamageWall : MonoBehaviour
     public bool attackPlayer = false;   //  Saldýrý Ýzni
     public string dmgWallType;      //  Engelin Seçilen Türü
     public int dwIndex;             //  Oluþturulma Indexi, Nesne Yok Edildiðinde Listeden Silmek Ýçin
+    public float punchPower;        //  Playerdaki Ýtilme Gücünü Deðiþtirmek Ýçin
     public float dmgCount;          //  Vereceði Hasar
     public float dmgGivenTime;      //  Hasar Verme Aralýðý
     public float lastDmgTime = 0f;  //  Hasar Aralýðýný Ölçmek Ýçin Zamanlayýcý, Oyun Süresinden Çýkarýlýnca Hasar Aralýðýndan Büyükse Hasar Veriyor
@@ -47,6 +48,7 @@ public class DamageWall : MonoBehaviour
 
     public void TypeStationary()
     {
+        punchPower = 2;
         dmgCount = 25;
         dmgGivenTime = 1;
 
@@ -59,6 +61,7 @@ public class DamageWall : MonoBehaviour
 
     public void TypeLaser()
     {
+        punchPower = 0.5f;
         dmgCount = 10;
         dmgGivenTime = 0.5f;
 
@@ -73,6 +76,7 @@ public class DamageWall : MonoBehaviour
 
     public void TypeBarrier()
     {
+        punchPower = 3;
         dmgCount = 30;
         dmgGivenTime = 20;
 
@@ -90,6 +94,7 @@ public class DamageWall : MonoBehaviour
     {
         if (attackPlayer == true && Time.time - lastDmgTime >= dmgGivenTime)
         {
+            _player.dmgPunchPower = punchPower;
             _player.TakeDamage(dmgCount);
 
             lastDmgTime = Time.time;
@@ -107,6 +112,7 @@ public class DamageWall : MonoBehaviour
             //  Oyun Ýlk Açýldýðýnda Direkt Kutuya Temas Edersek Oyun Vakti Daha Hasar Aralýðý Süresini Geçmediði Ýçin Hasar Vermiyordu, Buda Tek Seferlik Ýzin
             if (dmgWallType == "barrier" && Time.time < dmgGivenTime && lastDmgTime == 0)
             {
+                _player.dmgPunchPower = punchPower;
                 _player.TakeDamage(dmgCount);
 
                 lastDmgTime = Time.time;

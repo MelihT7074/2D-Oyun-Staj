@@ -6,6 +6,9 @@ public class EscAndOptions : MonoBehaviour
     public Player player;
     public GameDirector gameDirector;
 
+    [Header("Screens")]
+    public GameObject deathScreen; 
+
     [Header("Menuler")]
     public MenuTypes menuType;
     public string currentOpenMenu;
@@ -116,8 +119,9 @@ public class EscAndOptions : MonoBehaviour
     public void RestartGame()
     {
         gameDirector.RestartGame();
-
-        ContinueGameCloseEsc();         //  Þuanlýk Böye Kalsýn
+                                        //  Kullanýldýðýnda Menüleri Kapatmasý Ýçin
+        deathScreen.SetActive(false);
+        ContinueGameCloseEsc();
     }
 
     public void CloseGame()

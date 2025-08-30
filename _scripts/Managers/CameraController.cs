@@ -30,7 +30,7 @@ public class CameraContorller : MonoBehaviour
 
     private void LateUpdate()   //  Normal Updateden 1 Kare sonra Çaðrýlýr, Karakter Girdileri Aldýðýmýz Ýçin Kamera Takibinin, Girdilerden Sonra Olamsý Daha Ýyi
     {
-        CameraPosSwitch_Player();
+        CameraPosSwitch();
 
 
         Vector3 finalTarget = camTargetPos + lookOffset;
@@ -38,7 +38,7 @@ public class CameraContorller : MonoBehaviour
         MainCamera.transform.position = Vector3.Lerp(MainCamera.transform.position, finalTarget, camTransitionSpeed * Time.unscaledDeltaTime);
     }
 
-    public void CameraPosSwitch_Player()
+    public void CameraPosSwitch()
     {
         if (player.isAlive && escAndOptions.currentOpenMenu == "None")         //  Haraket Ediyorken Kameranýn Karakteri Takip Etmesi Ýçin
         {
@@ -69,7 +69,17 @@ public class CameraContorller : MonoBehaviour
         }
         else                //  Ölünce Buraya Ölüm Ekraný Falan Çaðrýlmalý,     Þuanlýk Esc Menusunu Hedefliyor, Ýlerde Ýyileþtirme Yapýlýnlamý
         {
-            CameraPosSwitch_EscMenus();
+            if (!player.isAlive && escAndOptions.currentOpenMenu == "None")
+            {
+                CameraPosSwitch_DeathScreen();
+            }
+            else
+            {
+                escAndOptions.deathScreen.SetActive(false);
+
+                CameraPosSwitch_EscMenus();
+            }
+
         }
     }
 
@@ -81,6 +91,16 @@ public class CameraContorller : MonoBehaviour
             camTargetPos.z = camOgPos.z;
             lookOffset =  Vector3.zero;
         }
+    }
+
+    public void CameraPosSwitch_DeathScreen()
+    {
+        escAndOptions.deathScreen.transform.position = player.transform.position;
+        escAndOptions.deathScreen.SetActive(true);
+
+        camTargetPos = player.transform.position;
+        camTargetPos.z = camOgPos.z;
+        lookOffset = Vector3.zero;
     }
 
 }

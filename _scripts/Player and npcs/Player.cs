@@ -26,6 +26,14 @@ public class Player : MonoBehaviour
     private float borderDmgStartTimerClon;
 
     [Space]
+    [Header("Hasar Efekti , Ölüm Ekraný")]
+    public bool isPlayerDmgTaken;       //  Hasar Aldýðýmýzýn Bilgisi
+    public Image img_DmgEffect;         //  Hasar Efekti Görseli, Hasar Alýnca Opaklýðý Fulleniyor Sonra Azalmaya Baþlýyor, Opaklýk Miktarýna Göre Diðer Tuþ Girdilerini Flnda Kilitliyorum
+    public bool isDmgImgActive;         //  Görselin Opaklýðýný Düþürmek Ýçin Onay Veriyor
+    public float dmgPunchPower;         //  Savrulma Miktarý, Düzgün Deðerleri Bulmak Zor
+
+
+    [Space]
     [Header("Hareket Ayarlarý")]
     public Rigidbody2D rb;              //  Fiziksel Ýþlemlerin Yapýlýnabilinmesi Ýçin Bileþen, Ýnsan Ýskeleti, Kas Sistemi Gibi Birþey
     public bool showVelocity;
@@ -125,17 +133,44 @@ public class Player : MonoBehaviour
 
     public void Death()
     {
+        DamageEffectStart();    //  
+
         isAlive = false;
         gameObject.SetActive(false);
+
+                //  Hasar Alarak Öldüysek Etkileri Sýfýrlama yeri
+        isPlayerDmgTaken = false;
+        img_DmgEffect.color = new Color(255, 255, 255, 0);
     }
 
     public void TakeDamage(float damageCount)
     {
-        SoundManager.Instance.PlayMusic("PlayerDamageSound");
-        currentHp -= damageCount;                           //  Hasar Miktarýna Göre Can Azaltýyor
-        hpRefillStart = false;                              //  Hasar Alýnca Can Dolumunu Durdurmak Ýçin
-        hpRefillTimer = hpRefillTimerClon;                  //  Doldurma Zamanlayýcýsýný Sýfýrlýyor
-        hpRefillTimerStart = true;                          //  Can Doldurma Süresini Aktifleþtiriyor
+        currentHp -= damageCount;                   //  Hasar Miktarýna Göre Can Azaltýyor
+        isPlayerDmgTaken = true;      //**
+        hpRefillStart = false;                      //  Hasar Alýnca Can Dolumunu Durdurmak Ýçin
+        hpRefillTimer = hpRefillTimerClon;          //  Doldurma Zamanlayýcýsýný Sýfýrlýyor
+        hpRefillTimerStart = true;                  //  Can Doldurma Süresini Aktifleþtiriyor
+    }
+
+    public void DamageEffectStart()
+    {
+        isPlayerDmgTaken = false;
+        SoundManager.Instance.PlayMusic("PlayerDamageSound");   //  Ses Efekti
+        img_DmgEffect.color = Color.white;                      //  Görseli Aktifleþtiriyor
+        isDmgImgActive = true;
+    }
+
+    public void DmgScreenCheck()
+    {
+        if (isDmgImgActive)
+        {
+            img_DmgEffect.color = new Color(255, 255, 255, img_DmgEffect.color.a - Time.deltaTime * 2);
+
+            if (img_DmgEffect.color.a <= 0)
+            {
+                isDmgImgActive = false;
+            }
+        }
     }
 
     void Update()   //  Her Framede Çalýþan Kýsým, Fps'e Baðlý Olduðu Ýçin Pc nin Kalitesine Göre Çalýþma Sýklýðý Deðiþiyor, Girdi Alma, Fizik Dýþý Ýþlemler Ýçin fln kullanýlýr
@@ -145,56 +180,58 @@ public class Player : MonoBehaviour
                                             //  Time.deltaTime : 2 Frame Arasý Geçen Süreyi Hesaplar, Bu Süre Farkýný timeScalea Göre Verir, Buyüzden Zaman 0 Olunca Duruyor.
                                             //  !!  FixedUpdate Ýse Sistemin Ürettiði Zaman Aralýklarýyla Çalýþtýðý Ýçin TimeScale=0dan Etkileniyor, Ýindeki Herþey Duruyor
 
-                                //  Yön Ve Haraket Girdileri
-        moveInput = 0f;
-        if (Input.GetKey(KeyCode.A))
+                                    //  Yön Ve Haraket Girdileri
+        if (img_DmgEffect.color.a <= 0.5f)  
         {
-            moveInput = -1f;
-            direction = Directions.Left;
-            directionInputs = new Vector2(-1, 0);
+            moveInput = 0f;
 
-            if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
-            { 
-                Debug.Log("Yatay Hareket Girdisi (Sol) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
+            if (Input.GetKey(KeyCode.A))
+            {
+                moveInput = -1f;
+                direction = Directions.Left;
+                directionInputs = new Vector2(-1, 0);
+
+                if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
+                { 
+                    Debug.Log("Yatay Hareket Girdisi (Sol) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
+                }
             }
-        }
-        else if (Input.GetKey(KeyCode.D))
-        {
-            moveInput = 1f;
-            direction = Directions.Right;
-            directionInputs = new Vector2(1, 0);
+            else if (Input.GetKey(KeyCode.D))
+            {
+                moveInput = 1f;
+                direction = Directions.Right;
+                directionInputs = new Vector2(1, 0);
 
             if (showVelocity)               //  Hareket, Yön, Velocity Kontrolleri //
             {
                 Debug.Log("Yatay Hareket Girdisi (Sað) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
             }
-        }
-        else if (Input.GetKey(KeyCode.W))
-        {
-            direction = Directions.Up;
-            directionInputs = new Vector2(directionInputs.x, 1);
-        }
-        else if (Input.GetKey(KeyCode.S))
-        {
-            direction = Directions.Down;
-            directionInputs = new Vector2(directionInputs.x, -1);
-        }
-        else
-        {
-            if (isFacingRight)
-            {
-                direction = Directions.Right;
-                directionInputs = new Vector2(1, 0);
             }
-            else if (!isFacingRight)
+            else if (Input.GetKey(KeyCode.W))
             {
-                direction = Directions.Left;
-                directionInputs = new Vector2(-1, 0);
+                direction = Directions.Up;
+                directionInputs = new Vector2(directionInputs.x, 1);
             }
-
+            else if (Input.GetKey(KeyCode.S))
+            {
+                direction = Directions.Down;
+                directionInputs = new Vector2(directionInputs.x, -1);
+            }
+            else
+            {
+                if (isFacingRight)
+                {
+                    direction = Directions.Right;
+                    directionInputs = new Vector2(1, 0);
+                }
+                else if (!isFacingRight)
+                {
+                    direction = Directions.Left;
+                    directionInputs = new Vector2(-1, 0);
+                }
+            }
         }
-
-                                //  Zýplama Mekanikleri
+                                    //  Zýplama Mekanikleri
         if (isGrounded) //  Yerle Temasta Ýken Sayaç Kapalý Ve Pozitif durumda, Zýplama Ýzinlerinden Biri Buranýn Pozitif Olmasý
         {
             coyoteTimeCounter = coyoteTime;
@@ -302,9 +339,20 @@ public class Player : MonoBehaviour
         WallSlide();
         WallJumping();
 
+
+        if (isPlayerDmgTaken)       //  Hasar Efektleri     //!!
+        {
+            moveInput = -directionInputs.x * dmgPunchPower;     //  Doðru Yermi Emin Deðilim, Etkisi Kýsa Sürüyor
+                    //  moveInput Tuþa Basýlmadýðýnda 0 Olduðu Ve Yatay Hareketde Doðrudan Buna Baðlý Olduðu Ýçin Ýyice Kýsalýyordu,
+                            //  Hasar Ekraný Opaklýðýna Göre Oradaki Girdileri Kapatýnca Durum Ýyileþti Gibi
+
+            DamageEffectStart();
+        }
+        DmgScreenCheck();
+
         GroundCheckRaycast();
 
-        if (!isWallJumping)
+        if (!isWallJumping && img_DmgEffect.color.a <= 0.25f)
         {
             FlipPlayerX();
         }
@@ -322,6 +370,7 @@ public class Player : MonoBehaviour
     {
         if (!isWallJumping)
         {
+
             rb.linearVelocity = new Vector2(moveInput * speed, rb.linearVelocity.y);    //  Yatay Haraket
 
             if (isWallSliding)      //  Kayma Þartlarý Gerçekleþtiyse x Eksenindeki Hareketi Kýsýtlayýp Yavaþça Aþaðýya Doðru Kayýyoruz
@@ -336,7 +385,7 @@ public class Player : MonoBehaviour
 
             if (jumpRequested)      //  Zýplama
             {
-                SoundManager.Instance.PlayMusic("PlayerJumpSound");
+                SoundManager.Instance.PlayMusic("JumpSound");           //  Ses Efekti
 
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
 
@@ -378,7 +427,7 @@ public class Player : MonoBehaviour
         {
             isWallJumping = true;
 
-            SoundManager.Instance.PlayMusic("PlayerJumpSound");
+            SoundManager.Instance.PlayMusic("WallJumpSound");           //  Ses Efekti
 
             rb.linearVelocity = new Vector2(wallJumpingDirection * walljumpingPower.x, walljumpingPower.y);
             wallJumpingCounter = 0f;
