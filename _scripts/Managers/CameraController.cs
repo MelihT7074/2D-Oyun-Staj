@@ -67,7 +67,7 @@ public class CameraContorller : MonoBehaviour
             }
             lookOffset = Vector3.Lerp(lookOffset, targetLookOffset, lookTransitionSpeed * Time.deltaTime);
         }
-        else                //  Ölünce Buraya Ölüm Ekraný Falan Çaðrýlmalý,     Þuanlýk Esc Menusunu Hedefliyor, Ýlerde Ýyileþtirme Yapýlýnlamý
+        else                        //  Kamerayý Ölüm Ekranýna Ve Esc Menülerine Hedefliyor
         {
             if (!player.isAlive && escAndOptions.currentOpenMenu == "None")
             {

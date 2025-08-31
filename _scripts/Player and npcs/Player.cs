@@ -7,6 +7,7 @@ public class Player : MonoBehaviour
     [Header("Managers")]
     public GameDirector gameDirector;
     public CameraContorller cameraContorller;
+    public KeybindingManager KBM;
 
     [Space]
     [Header("Can Ayarlarý")]
@@ -26,7 +27,7 @@ public class Player : MonoBehaviour
     private float borderDmgStartTimerClon;
 
     [Space]
-    [Header("Hasar Efekti , Ölüm Ekraný")]
+    [Header("Hasar Efektleri")]
     public bool isPlayerDmgTaken;       //  Hasar Aldýðýmýzýn Bilgisi
     public Image img_DmgEffect;         //  Hasar Efekti Görseli, Hasar Alýnca Opaklýðý Fulleniyor Sonra Azalmaya Baþlýyor, Opaklýk Miktarýna Göre Diðer Tuþ Girdilerini Flnda Kilitliyorum
     public bool isDmgImgActive;         //  Görselin Opaklýðýný Düþürmek Ýçin Onay Veriyor
@@ -115,16 +116,20 @@ public class Player : MonoBehaviour
 
     public void RestartPlayer()
     {
+        gameDirector.escAndOptions.deathScreen.SetActive(false);
+
         gameObject.SetActive(true);
         isAlive = true;
 
-        currentHp = hpClon;             //
+        gameDirector.GD_SwitchMusic();      //  Tekrar Canlanýnca Normal Oyun Müziðine Geçmek Ýçin
+
+        currentHp = hpClon;
 
         rb = GetComponent<Rigidbody2D>();
         rb.position = new Vector2(SpawnPos.transform.position.x, SpawnPos.transform.position.y + 1);
     }
 
-    public void PlayerAbilitysClon()    //  Daha Ýyi Ýsim Bulunmalý,
+    public void PlayerAbilitysClon()    //  Deðerlerin Yedeklerini Alma
     {
         hpClon = hp;
         hpRefillTimerClon = hpRefillTimer;
@@ -137,6 +142,8 @@ public class Player : MonoBehaviour
 
         isAlive = false;
         gameObject.SetActive(false);
+
+        gameDirector.GD_SwitchMusic();      //  Ölüm Ekraný Müziðine Geçmek Ýçin
 
                 //  Hasar Alarak Öldüysek Etkileri Sýfýrlama yeri
         isPlayerDmgTaken = false;
@@ -185,7 +192,7 @@ public class Player : MonoBehaviour
         {
             moveInput = 0f;
 
-            if (Input.GetKey(KeyCode.A))
+            if (Input.GetKey(KBM.GetKey("MoveLeft")) || Input.GetKey(KBM.GetKey("MoveLeft_Sc")))
             {
                 moveInput = -1f;
                 direction = Directions.Left;
@@ -196,7 +203,7 @@ public class Player : MonoBehaviour
                     Debug.Log("Yatay Hareket Girdisi (Sol) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
                 }
             }
-            else if (Input.GetKey(KeyCode.D))
+            else if (Input.GetKey(KBM.GetKey("MoveRight")) || Input.GetKey(KBM.GetKey("MoveRight_Sc")))
             {
                 moveInput = 1f;
                 direction = Directions.Right;
@@ -207,12 +214,12 @@ public class Player : MonoBehaviour
                 Debug.Log("Yatay Hareket Girdisi (Sað) : " + (moveInput > 0 ? "1 (Sað)" : "-1 (Sol)") + ", velocity : " + rb.linearVelocity);
             }
             }
-            else if (Input.GetKey(KeyCode.W))
+            else if (Input.GetKey(KBM.GetKey("LookUp")) || Input.GetKey(KBM.GetKey("LookUp_Sc")))
             {
                 direction = Directions.Up;
                 directionInputs = new Vector2(directionInputs.x, 1);
             }
-            else if (Input.GetKey(KeyCode.S))
+            else if (Input.GetKey(KBM.GetKey("LookDown")) || Input.GetKey(KBM.GetKey("LookDown_Sc")))
             {
                 direction = Directions.Down;
                 directionInputs = new Vector2(directionInputs.x, -1);
@@ -242,7 +249,7 @@ public class Player : MonoBehaviour
             coyoteTimeCounter -= Time.deltaTime;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space))    //  Zýplama Tuþuna Basýldýðýnda Sayaç Sýfýrlanýyor Ve Pozitifteyken Avantaj Saðlanýyor
+        if (Input.GetKeyDown(KBM.GetKey("Jump")))   //  Zýplama Tuþuna Basýldýðýnda Sayaç Sýfýrlanýyor Ve Pozitifteyken Avantaj Saðlanýyor
         {
             jumpBufferTimeCounter = jumpBufferTime;
         }
@@ -260,7 +267,7 @@ public class Player : MonoBehaviour
             jumpBufferTimeCounter = 0f; //  Sýfýrlanmassa Zýplama Süresi Gereksiz Artýyor
         }
 
-        if (Input.GetKeyUp(KeyCode.Space) && rb.linearVelocity.y > 0f)     //  Space Tuþu Býrakýldýðýnda Zýplamayý Kýsaltmak Ýçin Var
+        if (Input.GetKeyUp(KBM.GetKey("Jump")) && rb.linearVelocity.y > 0f)   //  Space Tuþu Býrakýldýðýnda Zýplamayý Kýsaltmak Ýçin Var
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * 0.5f);   //  Kýsa Bir Ýþlem Olduðu Ýçin Burada Yapmanýn Sakýncasý yok
             coyoteTimeCounter = 0f;     //  Doublejumpý Falan Önlemek Ýçin
@@ -423,7 +430,7 @@ public class Player : MonoBehaviour
             wallJumpingCounter -= Time.deltaTime;
         }
 
-        if (Input.GetKeyDown(KeyCode.Space) && wallJumpingCounter > 0f)
+        if (Input.GetKeyDown(KBM.GetKey("Jump")) && wallJumpingCounter > 0f)
         {
             isWallJumping = true;
 

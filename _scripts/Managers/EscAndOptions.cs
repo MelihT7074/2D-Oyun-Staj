@@ -5,6 +5,7 @@ public class EscAndOptions : MonoBehaviour
     [Header("Managerse")]
     public Player player;
     public GameDirector gameDirector;
+    public KeybindingManager KBM;
 
     [Header("Screens")]
     public GameObject deathScreen; 
@@ -21,13 +22,19 @@ public class EscAndOptions : MonoBehaviour
 
 
     public enum MenuTypes
-    {   //   0     1      2         3
-            None, Esc, Options, OptionsX
+    {   //   0     1      2         3                   4
+            None, Esc, Options, OptionsSound, OptionsKeybinding
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (KBM.waitingForKey || KBM.justReboundKey)    //  Tuþ Atanýrken Esc Çalýþmaýsn Diye Kontrol
+        {
+            KBM.justReboundKey = false;
+            return;
+        }
+
+        if (Input.GetKeyDown(KBM.GetKey("Esc")))
         {
             if (currentOpenMenu == "None")
             {
@@ -37,7 +44,11 @@ public class EscAndOptions : MonoBehaviour
             {
                 StopGameOpenEsc();
             }
-            else if (currentOpenMenu == "OptionsX")
+            else if (currentOpenMenu == "OptionsSound")
+            {
+                OpenOptions();
+            }
+            else if (currentOpenMenu == "OptionsKeybinding")
             {
                 OpenOptions();
             }
@@ -45,7 +56,6 @@ public class EscAndOptions : MonoBehaviour
             {
                 ContinueGameCloseEsc();
             }
-
         }
 
     }
@@ -59,7 +69,7 @@ public class EscAndOptions : MonoBehaviour
         menuType = MenuTypes.Esc;
         currentOpenMenu = menuType.ToString();
 
-        gameDirector.SwitchMusic();
+        gameDirector.GD_SwitchMusic();
 
         player.borderWarning.SetActive(false);  //  Uyarý Ekraný Her Halükarda Kapatýlýyor
 
@@ -80,7 +90,7 @@ public class EscAndOptions : MonoBehaviour
 
     public void SoundOptions()
     {
-        menuType = MenuTypes.OptionsX;
+        menuType = MenuTypes.OptionsSound;
         currentOpenMenu = menuType.ToString();
 
         options.SetActive(false);
@@ -89,7 +99,7 @@ public class EscAndOptions : MonoBehaviour
 
     public void KeyboardOptions()
     {
-        menuType = MenuTypes.OptionsX;
+        menuType = MenuTypes.OptionsKeybinding;
         currentOpenMenu = menuType.ToString();
 
         options.SetActive(false);
@@ -103,7 +113,7 @@ public class EscAndOptions : MonoBehaviour
         menuType = MenuTypes.None;
         currentOpenMenu = menuType.ToString();
 
-        gameDirector.SwitchMusic();
+        gameDirector.GD_SwitchMusic();
 
         if (player.onBorder || player.fallLoopCount > 10)
         {

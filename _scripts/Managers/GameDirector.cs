@@ -8,17 +8,18 @@ public class GameDirector : MonoBehaviour
     public CameraContorller cameraContorller;
     public EscAndOptions escAndOptions;
     public CursorManager cursorManager;
+    public KeybindingManager KBM;
 
 
     private void Start()
     {
         RestartGame();
-        SwitchMusic();
+        GD_SwitchMusic();
     }
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KBM.GetKey("Restart")) && escAndOptions.currentOpenMenu != "OptionsKeybinding")    //  Tuþ Atarken Çalýþmasýn Diye
         {
             RestartGame();
         }
@@ -30,15 +31,22 @@ public class GameDirector : MonoBehaviour
         levelManager.RestartLevelManager();
     }
 
-    public void SwitchMusic()
+    public void GD_SwitchMusic()
     {
-        if (escAndOptions.currentOpenMenu == "None")
+        if (escAndOptions.currentOpenMenu == "None" && player.isAlive)
         {
             SoundManager.Instance.SwitchMusic("GameMusic");
+            print("Oyun Müziði Çalýyor");
+        }
+        else if (escAndOptions.currentOpenMenu != "None" && player.isAlive)
+        {
+            SoundManager.Instance.SwitchMusic("EscMenuMusic");
+            print("Esc Menüsü Müziði Çalýyor");
         }
         else
         {
-            SoundManager.Instance.SwitchMusic("EscMenuMusic");
+            SoundManager.Instance.SwitchMusic("DeathMusic");
+            print("Ölüm Ekraný Müziði Çalýyor");
         }
     }
 
