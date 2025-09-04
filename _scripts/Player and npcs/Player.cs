@@ -97,6 +97,7 @@ public class Player : MonoBehaviour
     [Header("Map Sýnýrý Hasar Ayarlarý")]
     public GameObject borderWarning;
     public Text txt_leaveTimer;
+    public bool isBorderWarning;            //  Ekraný Aktifleþtirme Ve Kontrolü
     public int fallLoopCount;               //  Düþme Döngüsüne Girersek Uyarýyý Göstermek Ýçin
     public bool onBorder = false;           //  Map Sýnýrýndan Çýkarsak Uyarýyý Göstermek Ýçin
     public float borderDmgStartTimer = 5;   //  Hasar Almaya Baþlamadan Önceki Süre
@@ -148,6 +149,9 @@ public class Player : MonoBehaviour
                 //  Hasar Alarak Öldüysek Etkileri Sýfýrlama yeri
         isPlayerDmgTaken = false;
         img_DmgEffect.color = new Color(255, 255, 255, 0);
+                //  Uyarý Ekranýyla Öldüysek Onun Etkilerini Kapatmak Ýçin
+        fallLoopCount = 0;
+        onBorder = false;
     }
 
     public void TakeDamage(float damageCount)
@@ -310,8 +314,9 @@ public class Player : MonoBehaviour
         }
 
                                     //  Map Sýnýrýný Geçince Veya Düþme Döngüsüne Girince Uyarý Ve Hasar Alma
-        if (onBorder || fallLoopCount > 10)
+        if ((onBorder || fallLoopCount > 10) && isAlive)
         {
+            isBorderWarning = true;
             borderWarning.SetActive(true);
 
             if (borderDmgStartTimer >= 0)
@@ -333,6 +338,7 @@ public class Player : MonoBehaviour
         }
         else
         {
+            isBorderWarning = false;
             borderWarning.SetActive(false);
 
             borderDmgStartTimer += Time.deltaTime;
@@ -346,13 +352,15 @@ public class Player : MonoBehaviour
         WallSlide();
         WallJumping();
 
-
-        if (isPlayerDmgTaken)       //  Hasar Efektleri     //!!
+                            
+        if (isPlayerDmgTaken)   //  Hasar Efektleri
         {
-            moveInput = -directionInputs.x * dmgPunchPower;     //  Doðru Yermi Emin Deðilim, Etkisi Kýsa Sürüyor
-                    //  moveInput Tuþa Basýlmadýðýnda 0 Olduðu Ve Yatay Hareketde Doðrudan Buna Baðlý Olduðu Ýçin Ýyice Kýsalýyordu,
-                            //  Hasar Ekraný Opaklýðýna Göre Oradaki Girdileri Kapatýnca Durum Ýyileþti Gibi
-
+            if (!isBorderWarning)
+            {
+                moveInput = -directionInputs.x * dmgPunchPower;     //  Doðru Yermi Emin Deðilim, Etkisi Kýsa Sürüyor
+                        //  moveInput Tuþa Basýlmadýðýnda 0 Olduðu Ve Yatay Hareketde Doðrudan Buna Baðlý Olduðu Ýçin Ýyice Kýsalýyordu,
+                                //  Hasar Ekraný Opaklýðýna Göre Oradaki Girdileri Kapatýnca Durum Ýyileþti Gibi
+            }
             DamageEffectStart();
         }
         DmgScreenCheck();

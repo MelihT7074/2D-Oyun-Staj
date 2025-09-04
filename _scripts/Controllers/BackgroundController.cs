@@ -4,7 +4,7 @@ public class BackgroundController : MonoBehaviour
 {
     private float startPos;
     private float length;
-    public GameObject cam;
+    public Camera cam;
     public float parallaxEffect;    //  Arkaplanýn Kameraya Göre Hareket Etmesi Ýçin Gereken Hýz,   0 = Hareketsiz, 1 = Kamerayla Ayný
 
 
@@ -14,7 +14,7 @@ public class BackgroundController : MonoBehaviour
         length = GetComponent<SpriteRenderer>().bounds.size.x;
     }
 
-    void FixedUpdate()
+    void LateUpdate()
     {
         //  Kamera Hareketine Göre Arkaplan Hareketinin Mesafesini Ayarlama
 

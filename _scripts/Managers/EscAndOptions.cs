@@ -115,7 +115,7 @@ public class EscAndOptions : MonoBehaviour
 
         gameDirector.GD_SwitchMusic();
 
-        if (player.onBorder || player.fallLoopCount > 10)
+        if (player.isBorderWarning)
         {
             player.borderWarning.SetActive(true);   //  Eðer Kapanmadan Önce Açýksa Tekrar Açýlýyor, Deðilse Kapalý Kalýyor
         }
