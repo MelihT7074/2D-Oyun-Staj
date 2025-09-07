@@ -8,7 +8,7 @@ public class CursorManager : MonoBehaviour
     BasicCursor basicCursor;                        //  Aktif Olarak Kullanýlan Ýmleç
 
     int currentCursorFrame;                 //  Kullanýlan Ýmlecin Aktif Framei
-    float cursorTimer;                      //  Basit Bir Sayac, Bitince Sonraki Framee Geçsin Diye
+    float cursorTimer;                      //  kullanýlan Ýmlecin Sonraki Frame Geçme Sayacý
 
     [System.Serializable]                   //  Editörde Gözükmesi Ýçin
     public class BasicCursor        //  Ýmleçlerin Özellikleri
@@ -38,7 +38,7 @@ public class CursorManager : MonoBehaviour
         if (cursorTimer <= 0)
         {
             cursorTimer += basicCursor.cursorTimerRate;
-            currentCursorFrame = (currentCursorFrame + 1) % basicCursor.cursorFrames.Length;
+            currentCursorFrame = (currentCursorFrame + 1) % basicCursor.cursorFrames.Length;    //  Tüm Kareler Oynatýldýðýnda % Operatoru Ýle Baþa Alýnýyor
             Cursor.SetCursor(basicCursor.cursorFrames[currentCursorFrame], basicCursor.cursorHotspot, CursorMode.Auto);
         }
     }

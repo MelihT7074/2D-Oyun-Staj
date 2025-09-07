@@ -19,7 +19,7 @@ public class LevelManager : MonoBehaviour
     public List<DamageWall> lst_dmgWalls;           //  Oluþturulunacak Nesnelerin Tutulacaðý Liste
     public List<GameObject> lst_DWSpawnPos;             //  Mevcut/Müsait Spawnlanma Noktalarý
     public List<GameObject> lst_selectedDWSpawnPos;     //  Seçilen Ve Birdaha Seçilmemesi Gereken Spawn Noktalarý
-    private int choosenDWPos;                       //  LÝstelerdeki Nesnelere Indexinden Eriþmek Ýçin
+    private int choosenDWPos;                       //  Listelerdeki Nesnelere Indexinden Eriþmek Ýçin
     public List<string> lst_dmgWallTypes        //  Engellerin Türleri, Enuma Göre Ýþlemler Daha Basit Olduðu Ýçin List Kullanýdým
         = new List<string> { "stationary", "laser", "barrier"};
 

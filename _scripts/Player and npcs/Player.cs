@@ -375,7 +375,7 @@ public class Player : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (onBorder || fallLoopCount > 10)
+        if (isBorderWarning)
         {
             borderWarning.transform.position = new Vector2(transform.position.x, transform.position.y);
         }

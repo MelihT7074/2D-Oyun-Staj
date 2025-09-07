@@ -45,7 +45,7 @@ public class CameraContorller : MonoBehaviour
             camTransitionSpeed = player.speed * 2;
 
             camPosOffset.x = player.transform.position.x;
-            camPosOffset.y = player.transform.position.y;
+            camPosOffset.y = player.fallLoopCount < 2 ? player.transform.position.y : 0;    //  Düþme Döngülerinde Kamera Daha Stabil takip Ediyor
             camPosOffset.z = camOgPos.z;
 
             camTargetPos = camPosOffset;

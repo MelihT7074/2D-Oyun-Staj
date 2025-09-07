@@ -28,7 +28,7 @@ public class EscAndOptions : MonoBehaviour
 
     void Update()
     {
-        if (KBM.waitingForKey || KBM.justReboundKey)    //  Tuþ Atanýrken Esc Çalýþmaýsn Diye Kontrol
+        if (KBM.waitingForKey || KBM.justReboundKey)    //  Tuþ Atanýrken Esc Çalýþmasýn Diye Kontrol
         {
             KBM.justReboundKey = false;
             return;
